@@ -1,0 +1,4 @@
+# ATLAS AML v1 · capa pública de ingesta y cómputo.
+# Versiones acotadas: el resultado debe ser reproducible entre corridas.
+duckdb>=1.1,<2
+PyYAML>=6.0,<7
