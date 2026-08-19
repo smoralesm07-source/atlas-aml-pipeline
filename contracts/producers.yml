@@ -1,0 +1,92 @@
+# ATLAS AML v1 · manifiesto de productores
+#
+# Declara de dónde se lee cada contrato público. Todo se obtiene por HTTPS sin
+# credenciales: son sitios GitHub Pages y releases públicos. Este archivo es la
+# única fuente de verdad sobre qué se ingiere; el código no lleva URLs.
+#
+# Ningún productor se lee con permisos de escritura. El sistema v1 no puede
+# alterar el sistema v0 ni sus repositorios.
+
+manifest_version: "1.0"
+base: "https://smoralesm07-source.github.io"
+
+producers:
+
+  RADAR_SANCIONES:
+    repo: Radar_sanciones
+    grain: EVENTO_SANCIONATORIO
+    artifacts:
+      events:
+        path: /Radar_sanciones/data/events.json
+        format: json_array
+        identity: rut_fuente
+      entity_hub:
+        path: /Radar_sanciones/data/entity_hub_v1.json
+        format: json
+    guardrails:
+      - SANCION_ADMINISTRATIVA_NO_ES_LAFT
+      - NO_PROMOVER_IDENTIDAD_SOLO_POR_NOMBRE
+
+  RADAR_UAF:
+    repo: Radar_UAF
+    grain: SECTOR
+    artifacts:
+      reportability:
+        path: /Radar_UAF/data/reportability_sector_2025.json
+        format: json
+      dashboard:
+        path: /Radar_UAF/data/dashboard.json
+        format: json
+    guardrails:
+      - SILENCIO_ROS_AGREGADO_NO_ES_INCUMPLIMIENTO_INDIVIDUAL
+      - NO_OBSERVADO_NO_ES_NO_INSCRITO
+
+  RADAR_OSFL:
+    repo: Radar_OSFL
+    grain: ENTIDAD
+    artifacts:
+      entity_hub:
+        path: /Radar_OSFL/data/entity_hub_v1.jsonl
+        format: jsonl
+        identity: rut
+    guardrails:
+      - PERTENENCIA_OSFL_NO_ES_SENAL_ADVERSA
+      - ALCANCE_FATF_R8_NO_ES_SENAL_ADVERSA
+
+  RADAR_PRESUPUESTO:
+    repo: Rada_Presupuesto_Abierto
+    grain: RELACION_PROVEEDOR_SERVICIO
+    artifacts:
+      entity_enrichment:
+        path: /Rada_Presupuesto_Abierto/data/entity_enrichment_v1.json
+        format: json
+      spend_years:
+        path: /Rada_Presupuesto_Abierto/data/spend_years_v1.json
+        format: json
+    guardrails:
+      - MAGNITUD_DE_GASTO_NO_ES_IRREGULARIDAD
+      - DEPENDENCIA_ES_RELACION_ECONOMICA_NO_SOCIETARIA
+
+  RADAR_CGR:
+    repo: Radar-CGR
+    grain: HALLAZGO_AUDITORIA
+    artifacts:
+      dashboard:
+        path: /Radar-CGR/data/dashboard.json
+        format: json
+    guardrails:
+      - OBSERVACION_CGR_NO_ACREDITA_DELITO
+      - IDENTIDAD_SOLO_POR_NOMBRE_PERMANECE_CANDIDATA
+
+# Radar SII se distribuye como release público (Parquet), no como Pages.
+releases:
+  RADAR_SII:
+    repo: Radar_SII
+    tag: fusion-v1
+    asset: radar-sii-fusion-profile.zip
+    members:
+      - entity_search.parquet
+      - public_transport_manifest.json
+    guardrails:
+      - ACTIVIDAD_SII_NO_ES_CONDICION_JURIDICA_UAF
+      - OWNERSHIP_REQUIERE_AMBOS_EXTREMOS_CON_RUT_EXACTO

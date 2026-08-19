@@ -1,0 +1,120 @@
+name: Ingesta y construcción de hechos públicos
+
+# Sólo lee contratos públicos de los radares por HTTPS. No usa credenciales y
+# no tiene permisos de escritura sobre ningún repositorio de origen: el sistema
+# v0 no puede verse afectado por esta corrida.
+
+on:
+  schedule:
+    - cron: '40 6 * * *'      # diario, después de la ventana de los radares
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'contracts/**'
+      - '.github/workflows/build.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: atlas-v1-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install duckdb pyyaml
+
+      - name: Ingesta sellada de contratos públicos
+        run: python -m src.fetch --out data/raw
+
+      - name: Verificar que la ingesta sea utilizable
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, sys
+          from pathlib import Path
+          m = json.loads(Path('data/raw/_manifest.json').read_text(encoding='utf-8'))
+          sealed, failed = len(m['sealed']), len(m['failures'])
+          print(f"sellados={sealed} fallas={failed}")
+          for f in m['failures']:
+              print(f"  FALLA {f['producer']}/{f['artifact']}: {f['error']}")
+          # Falla de fuente no es cero, pero sin ningún artefacto no hay corte.
+          if sealed == 0:
+              sys.exit("Ningún artefacto disponible: no se publica corte nuevo.")
+          PY
+
+      - name: Construir hechos canónicos en Parquet
+        run: python -m src.build --raw data/raw --staged data/staged --out site/data
+
+      - name: Verificar que la capa pública no contenga criterios
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, sys
+          from pathlib import Path
+          b = json.loads(Path('site/data/_build.json').read_text(encoding='utf-8'))
+          for flag in ('contains_criteria', 'contains_scores', 'contains_aml_marks'):
+              if b.get(flag):
+                  sys.exit(f"El artefacto público declara {flag}=true. Abortando.")
+          print('[OK] capa pública sin criterios ni scores')
+          PY
+          # Guarda ESTRUCTURAL, no léxica: un grep de palabras marca como falla
+          # la propia documentación que declara la ausencia de criterios.
+          python - <<'PY'
+          import sys, yaml
+          from pathlib import Path
+          # 1) No debe existir ningún registro de tipologías en esta capa.
+          for f in Path('.').rglob('*.y*ml'):
+              if '.github' in f.parts:
+                  continue
+              try:
+                  doc = yaml.safe_load(f.read_text(encoding='utf-8')) or {}
+              except Exception:
+                  continue
+              if not isinstance(doc, dict):
+                  continue
+              prohibido = {'typologies', 'thresholds', 'aggregation', 'groups'}
+              if prohibido & set(doc):
+                  sys.exit(f'{f}: estructura de criterios en la capa pública.')
+          # 2) El manifiesto debe declararse libre de criterios.
+          import json
+          b = json.loads(Path('site/data/_build.json').read_text(encoding='utf-8'))
+          assert not any(b[k] for k in
+                         ('contains_criteria','contains_scores','contains_aml_marks'))
+          print('[OK] sin estructuras de criterio en la capa pública')
+          PY
+
+      - name: Publicar el shell del portal
+        run: cp -r web/* site/ 2>/dev/null || true
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
