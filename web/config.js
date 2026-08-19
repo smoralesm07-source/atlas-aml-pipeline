@@ -19,10 +19,10 @@ window.ATLAS_CONFIG = Object.freeze({
   supabase: {
     url: 'https://bzqxvidggykkdouotylg.supabase.co',
     // Clave anon (rol `anon` verificado en el JWT). Diseñada para el cliente.
-    anonKey:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6' +
-      'ImJ6cXh2aWRnZ3lra2RvdW90eWxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDY5NT' +
-      'MsImV4cCI6MjEwMjQ4Mjk1M30.PXQIof_L3G410XKPkgm_lqk2KFHRqzvu2LZxHw6PbXM',
+    // Se escribe entera y en una línea a propósito: partirla no aporta
+    // seguridad y sólo impide que los escáneres de secretos la identifiquen
+    // correctamente como una clave pública.
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6cXh2aWRnZ3lra2RvdW90eWxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDY5NTMsImV4cCI6MjEwMjQ4Mjk1M30.PXQIof_L3G410XKPkgm_lqk2KFHRqzvu2LZxHw6PbXM',
   },
 
   auth: {
