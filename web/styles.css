@@ -1,0 +1,153 @@
+/* ATLAS AML v1 · portal. Interfaz de trabajo: se opera, no se lee de corrido. */
+
+:root{
+  --paper:#F1F3F2; --surface:#fff; --sunk:#E7EBEA;
+  --rule:#CBD3D2; --rule-soft:#DDE3E2;
+  --ink:#15202A; --ink-soft:#4A5A63; --ink-faint:#728189;
+  --marine:#1A5875; --marine-soft:#E2EDF2;
+  --madder:#9E3A28; --madder-soft:#F6E7E3;
+  --olive:#456F45; --olive-soft:#E6EFE5; --ochre:#966C1F;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0F171E; --surface:#151F27; --sunk:#1B262F;
+    --rule:#2C3B45; --rule-soft:#232F38;
+    --ink:#E4EAEA; --ink-soft:#A2B0B6; --ink-faint:#7A888F;
+    --marine:#69B4D6; --marine-soft:#17313D;
+    --madder:#DE8875; --madder-soft:#331E1A;
+    --olive:#8FBB8C; --olive-soft:#1B2A1E; --ochre:#D3A85A;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+code{font-family:var(--mono);font-size:.85em;background:var(--sunk);
+  padding:1px 5px;border-radius:2px}
+:focus-visible{outline:2px solid var(--marine);outline-offset:2px}
+
+/* -------------------------------------------------------------- puerta */
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+.gate-card{background:var(--surface);border:1px solid var(--rule);
+  padding:40px;max-width:460px;text-align:center}
+.brand{font-family:var(--mono);font-weight:600;letter-spacing:.32em;
+  font-size:1.5rem;color:var(--marine)}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-faint);margin:8px 0 22px}
+.gate-card h1{font-size:1.3rem;margin:0 0 10px;text-wrap:balance}
+.gate-card p{color:var(--ink-soft);margin:0 0 18px}
+.error{color:var(--madder);font-family:var(--mono);font-size:.85rem}
+.loading{color:var(--ink-faint);font-family:var(--mono);font-size:.85rem}
+
+.primary{background:var(--marine);color:var(--surface);border:none;
+  padding:11px 22px;font-weight:600;border-radius:2px}
+.ghost{background:none;border:1px solid var(--rule);color:var(--ink);
+  padding:8px 16px;border-radius:2px}
+.ghost.sm{padding:5px 11px;font-size:.85rem}
+.ghost:hover,.primary:hover{filter:brightness(1.08)}
+
+/* --------------------------------------------------------------- shell */
+.shell{max-width:1180px;margin:0 auto;padding:0 clamp(14px,3vw,28px) 72px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:16px 0;border-bottom:2px solid var(--ink);flex-wrap:wrap}
+.idbox{display:flex;align-items:baseline;flex-wrap:wrap}
+.brand-sm{font-family:var(--mono);font-weight:600;letter-spacing:.2em;color:var(--marine)}
+.sep{color:var(--ink-faint);margin:0 6px}
+.sub{font-family:var(--mono);font-size:11px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-faint)}
+.who{display:flex;align-items:center;gap:12px}
+.mail{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+.notice{background:var(--marine-soft);border-left:3px solid var(--marine);
+  padding:11px 15px;margin:18px 0;font-size:.86rem;color:var(--ink-soft)}
+.notice strong{color:var(--ink)}
+.fine{font-size:.82rem;color:var(--ink-faint);margin:6px 0 18px;max-width:70ch}
+.empty{color:var(--ink-faint);padding:40px;text-align:center;
+  border:1px dashed var(--rule)}
+
+.bar{display:flex;justify-content:space-between;align-items:center;gap:14px;
+  flex-wrap:wrap;margin-bottom:14px}
+.stamp{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-faint)}
+.filter{font:inherit;font-size:.88rem;padding:7px 12px;min-width:250px;
+  border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:2px}
+.pill{display:inline-block;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;
+  border:1px solid currentColor;border-radius:2px;margin-left:8px}
+.pill.hold{color:var(--madder)}
+
+/* ---------------------------------------------------------------- cola */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table.queue{border-collapse:collapse;width:100%;min-width:760px;font-size:.88rem}
+.queue th{text-align:left;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--ink-soft);padding:10px 14px;border-bottom:1px solid var(--rule);
+  background:var(--sunk);position:sticky;top:0}
+.queue td{padding:10px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+.queue tbody tr{cursor:pointer}
+.queue tbody tr:hover,.queue tbody tr:focus-visible{background:var(--marine-soft)}
+.queue tbody tr:last-child td{border-bottom:none}
+.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.nm{display:block;font-weight:600}
+.rut{display:block;font-family:var(--mono);font-size:.76rem;color:var(--ink-faint)}
+.drivers code{margin-right:3px}
+.muted{font-size:.76rem;color:var(--ink-faint);margin-left:4px}
+
+.score{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;
+  padding:2px 8px;border-radius:2px;border:1px solid currentColor}
+.score.alta{color:var(--madder);background:var(--madder-soft)}
+.score.media{color:var(--ochre)}
+.score.baja{color:var(--ink-soft)}
+
+/* ------------------------------------------------------------- entidad */
+.back{margin:16px 0}
+.ent-head{display:flex;justify-content:space-between;align-items:flex-start;
+  gap:20px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:16px}
+.ent-head h2{margin:0;font-size:1.35rem;text-wrap:balance}
+.big{text-align:right}
+.big .score{font-size:1.6rem;padding:5px 13px}
+.cap{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-faint);margin-top:6px}
+.quality{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);margin:18px 0 0}
+.quality div{background:var(--surface);padding:11px 14px}
+.quality dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:3px}
+.quality dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.ent h3{font-size:1rem;margin:30px 0 12px;padding-top:14px;border-top:1px solid var(--rule)}
+
+.mark{background:var(--surface);border:1px solid var(--rule);
+  border-left:3px solid var(--marine);padding:14px 16px;margin-bottom:10px}
+.mark.off{border-left-color:var(--rule);opacity:.72}
+.mark header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.mark h4{margin:0;font-size:.95rem;flex:1}
+.contrib{font-family:var(--mono);font-size:.82rem;font-weight:600;color:var(--marine)}
+.mark.off .contrib{color:var(--ink-faint)}
+.why{margin:8px 0 0;font-size:.85rem;color:var(--ink-soft)}
+.absorb{margin:6px 0 0;font-size:.8rem;color:var(--ochre)}
+.mark details{margin-top:10px}
+.mark summary{cursor:pointer;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--marine)}
+.thr{margin:10px 0 4px;font-size:.83rem;background:var(--sunk);padding:9px 12px}
+.meta{margin:4px 0;font-family:var(--mono);font-size:.76rem;color:var(--ink-faint)}
+.rails{margin:8px 0 0;padding-left:18px}
+.rails li{font-size:.78rem;color:var(--madder);margin-bottom:3px;font-family:var(--mono)}
+
+/* -------------------------------------------------------------- triage */
+.triage{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tri{background:var(--surface);border:1px solid var(--rule);color:var(--ink);
+  padding:9px 15px;border-radius:2px;font-size:.87rem}
+.tri:hover:not(:disabled){border-color:var(--marine);color:var(--marine)}
+.tri:disabled{opacity:.45;cursor:not-allowed}
+.tri.done{background:var(--olive-soft);border-color:var(--olive);
+  color:var(--olive);opacity:1;font-weight:600}
+.tri-msg{font-size:.85rem;min-height:1.3em;margin:0}
+.tri-msg.ok{color:var(--olive)}
+.tri-msg.bad{color:var(--madder)}
+
+@media (max-width:640px){
+  body{font-size:15px}
+  .gate-card{padding:28px}
+  .ent-head{flex-direction:column}
+  .big{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
