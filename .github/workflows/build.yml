@@ -1,8 +1,8 @@
 name: Ingesta y construcción de hechos públicos
 
-# Sólo lee contratos públicos de los radares por HTTPS. No usa credenciales y
-# no tiene permisos de escritura sobre ningún repositorio de origen: el sistema
-# v0 no puede verse afectado por esta corrida.
+# Sólo lee fuentes públicas por HTTPS. No usa credenciales y no tiene permisos
+# de escritura sobre repositorios de origen. RES se consume exclusivamente desde
+# Datos.gob.cl; no se raspa registrodeempresasysociedades.cl.
 
 on:
   schedule:
@@ -13,7 +13,7 @@ on:
     paths:
       - 'src/**'
       - 'contracts/**'
-      - 'web/**'                       # el portal se publica desde aquí
+      - 'web/**'
       - '.github/workflows/build.yml'
 
 permissions:
@@ -40,6 +40,9 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Validar adaptador RES sin red
+        run: python -m src.res --self-test
+
       - name: Ingesta sellada de contratos públicos
         run: python -m src.fetch --out data/raw
 
@@ -55,13 +58,18 @@ jobs:
           print(f"sellados={sealed} fallas={failed}")
           for f in m['failures']:
               print(f"  FALLA {f['producer']}/{f['artifact']}: {f['error']}")
-          # Falla de fuente no es cero, pero sin ningún artefacto no hay corte.
           if sealed == 0:
               sys.exit("Ningún artefacto disponible: no se publica corte nuevo.")
           PY
 
       - name: Construir hechos canónicos en Parquet
         run: python -m src.build --raw data/raw --staged data/staged --out site/data
+
+      - name: Incorporar RES desde Datos.gob.cl
+        # Una indisponibilidad temporal del catálogo no debe derribar el resto
+        # de Atlas. El self-test anterior sí es estricto y detecta regresiones.
+        continue-on-error: true
+        run: python -m src.res --raw data/raw/res --out site/data
 
       - name: Verificar que la capa pública no contenga criterios
         shell: bash
@@ -76,12 +84,9 @@ jobs:
                   sys.exit(f"El artefacto público declara {flag}=true. Abortando.")
           print('[OK] capa pública sin criterios ni scores')
           PY
-          # Guarda ESTRUCTURAL, no léxica: un grep de palabras marca como falla
-          # la propia documentación que declara la ausencia de criterios.
           python - <<'PY'
           import sys, yaml
           from pathlib import Path
-          # 1) No debe existir ningún registro de tipologías en esta capa.
           for f in Path('.').rglob('*.y*ml'):
               if '.github' in f.parts:
                   continue
@@ -94,11 +99,17 @@ jobs:
               prohibido = {'typologies', 'thresholds', 'aggregation', 'groups'}
               if prohibido & set(doc):
                   sys.exit(f'{f}: estructura de criterios en la capa pública.')
-          # 2) El manifiesto debe declararse libre de criterios.
           import json
           b = json.loads(Path('site/data/_build.json').read_text(encoding='utf-8'))
           assert not any(b[k] for k in
                          ('contains_criteria','contains_scores','contains_aml_marks'))
+          res = Path('site/data/_res_build.json')
+          if res.exists():
+              rb = json.loads(res.read_text(encoding='utf-8'))
+              assert not any(rb[k] for k in
+                             ('contains_criteria','contains_scores','contains_aml_marks'))
+              assert rb['scrapes_res_website'] is False
+              print('[OK] RES usa sólo fuente oficial Datos.gob.cl')
           print('[OK] sin estructuras de criterio en la capa pública')
           PY
 

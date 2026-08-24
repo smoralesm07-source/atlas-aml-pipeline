@@ -1,0 +1,38 @@
+name: Validate RES public facts
+
+on:
+  pull_request:
+    paths:
+      - 'src/res.py'
+      - 'requirements.txt'
+      - '.github/workflows/validate-res.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Compile and self-test RES
+        run: |
+          python -m py_compile src/res.py
+          python -m src.res --self-test
+      - name: Verify public-facts boundary
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text=Path('src/res.py').read_text(encoding='utf-8')
+          assert 'registrodeempresasysociedades.cl' in text
+          assert 'datos.gob.cl' in text
+          assert 'scrapes_res_website' in text
+          print('[OK] RES adapter declares source boundary')
+          PY
